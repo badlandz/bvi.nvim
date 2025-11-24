@@ -78,3 +78,20 @@ end, opts)
 
   -- Bonus: leader-0 → last buffer (like tmux last-window)
   map("n", "<leader>0", "<C-^>", { desc = "Alternate/last buffer" })
+
+    -- DB: Open schema, run query
+  map("n", "<leader>db", ":DBUIToggle<CR>", { desc = "DB Browser" })
+  map("v", "<leader>cr", "<Plug>(DBUI_ExecuteQuery)", { desc = "Run SQL" })  -- Visual select → run
+
+  -- FORMAT: Manual if auto-save misses
+  map("n", "<leader>fm", function() require("conform").format({ async = true }) end, { desc = "Format" })
+
+  -- MARKDOWN: Preview, open link (old muscle memory)
+  map("n", "<leader>mp", ":MarkdownPreviewToggle<CR>", { desc = "Markdown Preview" })
+  map("n", "<CR>", "<Plug>(Markdown_Open_Link)", { desc = "Open Markdown Link" })  -- Enter on link
+
+  -- TASKWARRIOR: Toggle tasks
+  map("n", "<leader>tw", ":TaskWarriorToggle<CR>", { desc = "TaskWarrior" })
+
+  -- LSP: Diagnostics list
+  map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", { desc = "Diagnostics (Trouble)" })
