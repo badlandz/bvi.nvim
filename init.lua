@@ -1,4 +1,4 @@
--- ~/.config/bvi/init.lua
+-- ~/.config/nvim/init.lua
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
