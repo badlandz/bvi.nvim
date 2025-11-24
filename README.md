@@ -79,7 +79,7 @@ fi
 ```
 
 ### BVI Official Tagline
-“BVI is to your editor what BAUX is to your shell: bvi wraps all vi, baux wraps bash with tmux for the fastest keystroke to an immortal coding universe—from vi.tiny on a bare USB stick to Kickstart-powered Neovim madness with AI, DB introspection, and tmux harmony—all without forgetting a single buffer or undo step. It just works, and it never dies.” 
+“BVI is to your editor what BAUX is to your shell: bvi wraps all vi, baux wraps bash with tmux for the fastest keystroke to an immortal coding universe—from vi.tiny on a bare USB stick to Kickstart-powered Neovim madness with AI, DB introspection, and tmux harmony—all without forgetting a single buffer or undo step. It just works, and it never dies.”
 
 This is the locked-in vision for BVI: Pragmatic, extensible, and ready for v0.1 packaging. With the rename and LunarVim-inspired isolation, it's a standalone powerhouse for RoxieOS users.
 
@@ -88,4 +88,10 @@ For now, testing:
 git clone https://github.com/badlandz/bvi.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
 ```
 
-Now, to actually configure the plugin.. Ugh...
+For maximum useage bling/bloat, I have this on my workstation to use it:
+```
+sudo apt update
+sudo apt install -y build-essential git make gcc curl wget unzip gzip tar nodejs npm ripgrep fd-find postgresql-client texlive-full zathura taskwarrior ca-certificates```
+
+Still debugging
+
