@@ -137,27 +137,16 @@ local specs = {
 
   -- MARKDOWN: Syntax/folding/links (Enter opens links like old vimwiki)
   {
-<<<<<<< HEAD
     "OXY2DEV/markview.nvim",
     ft = { "markdown", "md" },
     opts = { modes = { "n", "i" } },  -- Conceal/render for headings/tables
-=======
-    'MeanderingProgrammer/markview.nvim',
-    ft = { 'markdown', 'md' },
-    opts = { modes = { 'n', 'i' } }, -- Conceal/render for headings/tables
->>>>>>> 262406d8f088c0eba4f72ef08a7a6e43bedf3517
   },
   {
     'preservim/vim-markdown',
     ft = { 'markdown', 'md' },
     init = function()
-<<<<<<< HEAD
-      vim.g.vim_markdown_folding_disabled = 1  -- Folding like old
+      vim.g.vim_markdown_folding_disabled = 1  -- HATE this
       vim.g.vim_markdown_autowrite = 1         -- Auto-save
-=======
-      vim.g.vim_markdown_folding_disabled = 0 -- Folding like old
-      vim.g.vim_markdown_autowrite = 1 -- Auto-save
->>>>>>> 262406d8f088c0eba4f72ef08a7a6e43bedf3517
       vim.g.vim_markdown_new_list_item_indent = 0
     end,
   },
