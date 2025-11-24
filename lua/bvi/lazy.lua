@@ -16,15 +16,39 @@ local specs = {
   { 'echasnovski/mini.nvim', version = false }, -- the swiss army knife
   -- { 'folke/lazy.nvim', version = false }, -- Already bootstrapped, don't load twice
 
+    -- TABLINE AT THE TOP – the canonical 2025 cyberdeck look
+    {
+      "echasnovski/mini.tabline",
+      version = false,
+      config = function()
+        require("mini.tabline").setup({
+          -- Nerd Font icons (already shipped in BAUX)
+          show_icons = true,
+
+          -- Clean spacing + modified dot
+          format = function(buf_id, label)
+            local modified = vim.bo[buf_id].modified and " ●" or ""
+            return " " .. label .. modified .. " "
+          end,
+
+          -- Optional: hide when only one buffer (saves vertical space)
+          -- set to false if you want it always visible
+          show_only_current = false,
+        })
+      end,
+    },
+
+
   -- IMMORTALITY
   { 'folke/persistence.nvim', event = 'BufReadPre', opts = { options = { 'buffers', 'curdir', 'tabpages', 'winsize' } } },
 
   -- LAYERS FOREVER (with your BAUX cond from earlier)
-  { 
-    'christoomey/vim-tmux-navigator', 
+  {
+    'christoomey/vim-tmux-navigator',
     cond = function() return os.getenv("BAUX_SESSION") == "1" end,
     lazy = false,
   },
+  -- lua/bvi/plugins/tabline.lua  (or just drop into your inlined specs)
 
   -- ESSENTIALS
   { 'nvim-telescope/telescope.nvim', dependencies = { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' } },
@@ -33,6 +57,7 @@ local specs = {
   { 'lewis6991/gitsigns.nvim' },
   { 'mbbill/undotree' },
   { 'folke/which-key.nvim' },
+
 }
 
 require('lazy').setup(specs, {
