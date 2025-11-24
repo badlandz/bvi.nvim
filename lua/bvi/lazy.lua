@@ -69,15 +69,40 @@ local specs = {
   { 'folke/which-key.nvim' },
 
   -- MASON: Auto-install LSPs/formatters (clangd/lua_ls/bashls/sqls/shfmt/clang-format/sqlfmt/stylua)
+  -- MASON: Auto-install LSPs/formatters (clangd/lua_ls/bashls/sqls/shfmt/clang-format/sqlfmt/stylua)
   {
     'williamboman/mason.nvim',
+    build = ':MasonUpdate', -- keeps registry fresh
     opts = {
-      ensure_installed = { 'clangd', 'lua_ls', 'bash-language-server', 'sqls', 'shfmt', 'clang-format', 'sqlfmt', 'stylua' },
+      ensure_installed = {
+        'clangd',
+        'lua_ls',
+        'lua-language-server',
+        'bash-language-server',
+        'sqls',
+        'shfmt',
+        'clang-format',
+        'sqlfmt',
+        'stylua',
+      },
     },
     config = function(_, opts)
-      require('mason').setup()
-      require('mason-lspconfig').setup { automatic_installation = true }
+      require('mason').setup(opts)
+
+      -- Modern Lazy way — mason-lspconfig is a separate plugin now
+      local mason_lspconfig = require('mason-lspconfig')
+      mason_lspconfig.setup({
+        -- This automatically installs any LSP that mason knows about
+        -- when you call lspconfig.xxx.setup() later → matches your old automatic_installation = true
+        automatic_installation = true,
+      })
     end,
+  },
+  -- This must be a separate entry (Lazy loads it after mason.nvim)
+  {
+    'williamboman/mason-lspconfig.nvim',
+    dependencies = { 'williamboman/mason.nvim' },
+    -- no config needed here — everything is done in the block above
   },
 
   -- LSP ENHANCEMENTS: Lua/C/Bash/SQL autocomplete/defs/hovers (live from swarm PG for SQL)
