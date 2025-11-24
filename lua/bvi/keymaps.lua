@@ -45,3 +45,36 @@ end, opts)
 map('n', '<leader>ql', function()
   require('persistence').load { last = true }
 end, opts)
+
+  -- THE SACRED LATTICE — leader + 1–9 → jump to buffer 1–9
+  -- This is the final unification of the entire OS keymap
+  for i = 1, 9 do
+    map("n", "<leader>" .. i, function()
+      local ok, buf = pcall(vim.api.nvim_win_get_buf, 0)
+      if not ok then return end
+
+      -- Try to go to buffer i in the current window first
+      local wins = vim.api.nvim_list_wins()
+      for _, win in ipairs(wins) do
+        if vim.api.nvim_win_is_valid(win) then
+          local win_buf = vim.api.nvim_win_get_buf(win)
+          if vim.api.nvim_buf_is_loaded(win_buf) and vim.fn.bufname(win_buf) ~= "" then
+            local listed = vim.api.nvim_buf_get_option(win_buf, "buflisted")
+            if listed then
+              local num = vim.api.nvim_buf_get_number(win_buf)
+              if num == i then
+                vim.api.nvim_set_current_win(win)
+                return
+              end
+            end
+          end
+        end
+      end
+
+      -- Fallback: select the i-th listed buffer (classic behaviour)
+      vim.cmd(i .. "buffer")
+    end, { desc = "Jump to buffer " .. i })
+  end
+
+  -- Bonus: leader-0 → last buffer (like tmux last-window)
+  map("n", "<leader>0", "<C-^>", { desc = "Alternate/last buffer" })
