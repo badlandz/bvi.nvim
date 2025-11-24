@@ -91,11 +91,7 @@ local specs = {
 
       -- Modern Lazy way — mason-lspconfig is a separate plugin now
       local mason_lspconfig = require('mason-lspconfig')
-      mason_lspconfig.setup({
-        -- This automatically installs any LSP that mason knows about
-        -- when you call lspconfig.xxx.setup() later → matches your old automatic_installation = true
-        automatic_installation = true,
-      })
+      mason_lspconfig.setup({ automatic_installation = true, })
     end,
   },
   -- This must be a separate entry (Lazy loads it after mason.nvim)
