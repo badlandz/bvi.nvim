@@ -1,13 +1,3 @@
-{
-  "badlandz/bvi.nvim",
-  lazy = false,                  -- always load (it's the config itself)
-  priority = 1000,               -- highest priority
-  cond = function()
-    -- Only load if we are actually running from the cloned plugin folder
-    return vim.fn.isdirectory(vim.fn.stdpath("config") .. "/lua/bvi/.git") == 1
-  end,
-},
-
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
   -- Manual clone with error handling for Nix weirdness
@@ -47,7 +37,16 @@ local specs = {
         })
       end,
     },
-
+-- Update myself
+{
+  "badlandz/bvi.nvim",
+  lazy = false,                  -- always load (it's the config itself)
+  priority = 1000,               -- highest priority
+  cond = function()
+    -- Only load if we are actually running from the cloned plugin folder
+    return vim.fn.isdirectory(vim.fn.stdpath("config") .. "/lua/bvi/.git") == 1
+  end,
+},
 
   -- IMMORTALITY
   { 'folke/persistence.nvim', event = 'BufReadPre', opts = { options = { 'buffers', 'curdir', 'tabpages', 'winsize' } } },
