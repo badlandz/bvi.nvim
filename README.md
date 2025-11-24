@@ -89,5 +89,3 @@ git clone https://github.com/badlandz/bvi.nvim.git "${XDG_CONFIG_HOME:-$HOME/.co
 ```
 
 Now, to actually configure the plugin.. Ugh...
-```
-```
