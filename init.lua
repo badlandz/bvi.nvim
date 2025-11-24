@@ -1,5 +1,19 @@
--- ~/.config/nvim/init.lua
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+-- github.com/badlandz/bvi.nvim/init.lua
+-- This is the entry point to the world of BAUX
 
-require 'bvi.lazy' -- this sets up lazy.nvim and loads everything else
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+-- Bootstrap lazy.nvim if not present
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git", "clone", "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- Load the rest of bvi (your actual config)
+require("bvi.lazy")
