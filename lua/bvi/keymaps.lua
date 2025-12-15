@@ -93,5 +93,55 @@ end, opts)
   -- TASKWARRIOR: Toggle tasks
   map("n", "<leader>tw", ":TaskWarriorToggle<CR>", { desc = "TaskWarrior" })
 
-  -- LSP: Diagnostics list
-  map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", { desc = "Diagnostics (Trouble)" })
+   -- LSP: Diagnostics list
+   map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", { desc = "Diagnostics (Trouble)" })
+
+   -- AI ASSISTANCE: Enhanced context-aware AI help with direct BAUXD integration
+   map("n", "<leader>ai", function()
+     local ai = require('bvi.ai')
+     if not ai.setup() then return end
+     ai.smart_assist()
+   end, { desc = "Smart AI Assistance" })
+
+   map("v", "<leader>ai", function()
+     local ai = require('bvi.ai')
+     if not ai.setup() then return end
+     -- Get visual selection
+     local start_pos = vim.fn.getpos("'<")
+     local end_pos = vim.fn.getpos("'>")
+     local lines = vim.fn.getline(start_pos[2], end_pos[2])
+     local selection = table.concat(lines, "\n")
+     ai.smart_assist("Help with this code selection: " .. selection)
+   end, { desc = "AI on Selection" })
+
+   -- SPECIALIZED AI COMMANDS
+   map("n", "<leader>aa", function()
+     local ai = require('bvi.ai')
+     if not ai.setup() then return end
+     ai.analyze_code()
+   end, { desc = "Analyze Code" })
+
+   map("n", "<leader>ar", function()
+     local ai = require('bvi.ai')
+     if not ai.setup() then return end
+     ai.smart_assist("Suggest refactoring improvements for this code")
+   end, { desc = "Refactoring Suggestions" })
+
+   map("n", "<leader>ad", function()
+     local ai = require('bvi.ai')
+     if not ai.setup() then return end
+     ai.smart_assist("Help debug this code - identify potential issues")
+   end, { desc = "Debug Assistance" })
+
+   -- AI CONTEXT & STATUS
+   map("n", "<leader>ac", function()
+     local ai = require('bvi.ai')
+     if not ai.setup() then return end
+     ai.show_context()
+   end, { desc = "Show AI Context" })
+
+   map("n", "<leader>as", function()
+     local ai = require('bvi.ai')
+     if not ai.setup() then return end
+     ai.show_status()
+   end, { desc = "AI System Status" })

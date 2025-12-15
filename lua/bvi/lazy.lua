@@ -224,3 +224,17 @@ require 'bvi.options'
 require 'bvi.keymaps'
 require 'bvi.autocmds'
 require 'bvi.ui'
+
+-- Initialize BVI AI integration
+local ai_ok, ai = pcall(require, 'bvi.ai')
+if ai_ok then
+  ai.setup({
+    bauxd_host = "localhost",
+    bauxd_port = 9999,
+    timeout = 5000,
+    enable_completion = true,
+    enable_diagnostics = true
+  })
+else
+  vim.notify("BVI AI integration failed to load: " .. ai, vim.log.levels.WARN)
+end
