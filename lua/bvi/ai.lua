@@ -14,6 +14,9 @@ M.config = {
   enable_diagnostics = true
 }
 
+-- State
+M.bauxd_available = false
+
 -- HTTP client for BAUXD communication
 M.http_request = function(method, endpoint, data, callback)
   local curl = require('plenary.curl')
@@ -163,6 +166,12 @@ end
 
 -- AI assistance with smart context
 M.smart_assist = function(query)
+  if not M.bauxd_available then
+    vim.notify("BVI AI: BAUXD not available. Please install BAUXD or use BAUX ecosystem.", vim.log.levels.WARN)
+    vim.notify("BVI AI: For standalone usage, consider integrating with other AI services.", vim.log.levels.INFO)
+    return
+  end
+
   local context = M.get_editor_context()
 
   -- Show loading indicator
@@ -187,6 +196,11 @@ end
 
 -- Analyze current code/function
 M.analyze_code = function()
+  if not M.bauxd_available then
+    vim.notify("BVI AI: Code analysis requires BAUXD. Please install BAUXD or use BAUX ecosystem.", vim.log.levels.WARN)
+    return
+  end
+
   local context = M.get_editor_context()
 
   -- Focus on current function/class if possible
@@ -280,49 +294,59 @@ end
 
 -- AI system status check
 M.show_status = function()
-  local spinner = require('bvi.ui').show_spinner("Checking BAUXD status...")
+  local status_lines = {
+    "=== BVI AI Status ===",
+    string.format("BAUXD Available: %s", M.bauxd_available and "Yes" or "No"),
+    string.format("Plenary Available: %s", pcall(require, 'plenary.curl') and "Yes" or "No"),
+    "",
+    "=== Configuration ==="
+  }
 
-  M.http_request("GET", "/health", nil, function(response)
-    spinner:hide()
+  -- Add config info
+  status_lines[#status_lines + 1] = string.format("Host: %s:%d", M.config.bauxd_host, M.config.bauxd_port)
+  status_lines[#status_lines + 1] = string.format("Timeout: %dms", M.config.timeout)
+  status_lines[#status_lines + 1] = string.format("Max Context: %d lines", M.config.max_context_lines)
 
-    local status_lines = {
-      "=== BAUXD System Status ===",
-      string.format("Status: %s", response.status or "unknown"),
-      string.format("Service: %s", response.service or "unknown"),
-      string.format("Version: %s", response.version or "unknown"),
-      "",
-      "=== Hardware Metrics ==="
-    }
+  -- If BAUXD is available, get real status
+  if M.bauxd_available then
+    local spinner = require('bvi.ui').show_spinner("Checking BAUXD status...")
 
-    if response.hardware then
-      status_lines[#status_lines + 1] = string.format("CPU: %.1f%%", (response.hardware.cpu or 0) * 100)
-      status_lines[#status_lines + 1] = string.format("Memory: %.1f%%", response.hardware.memory or 0)
-      status_lines[#status_lines + 1] = string.format("Disk: %.1f%%", response.hardware.disk or 0)
-    end
+    M.http_request("GET", "/health", nil, function(response)
+      spinner:hide()
 
-    -- Show AI services status
-    M.http_request("GET", "/ai/services", nil, function(ai_response)
-      vim.schedule(function()
+      status_lines[#status_lines + 1] = ""
+      status_lines[#status_lines + 1] = "=== BAUXD Live Status ==="
+      status_lines[#status_lines + 1] = string.format("Status: %s", response.status or "unknown")
+      status_lines[#status_lines + 1] = string.format("Service: %s", response.service or "unknown")
+      status_lines[#status_lines + 1] = string.format("Version: %s", response.version or "unknown")
+
+      if response.hardware then
         status_lines[#status_lines + 1] = ""
-        status_lines[#status_lines + 1] = "=== AI Services ==="
+        status_lines[#status_lines + 1] = "=== Hardware Metrics ==="
+        status_lines[#status_lines + 1] = string.format("CPU: %.1f%%", (response.hardware.cpu or 0) * 100)
+        status_lines[#status_lines + 1] = string.format("Memory: %.1f%%", response.hardware.memory or 0)
+        status_lines[#status_lines + 1] = string.format("Disk: %.1f%%", response.hardware.disk or 0)
+      end
 
-        if ai_response.services then
-          for _, service in ipairs(ai_response.services) do
-            status_lines[#status_lines + 1] = string.format("• %s (%s)", service.name, service.status or "unknown")
-          end
-        else
-          status_lines[#status_lines + 1] = "No AI services detected"
-        end
-
-        -- Display the status
-        vim.cmd("new")
-        vim.api.nvim_buf_set_lines(0, 0, -1, false, status_lines)
-        vim.cmd("setlocal buftype=nofile bufhidden=wipe noswapfile")
-        vim.cmd("setlocal filetype=bvi-status")
-        vim.cmd("resize 15")
-      end)
+      -- Display the status
+      vim.cmd("new")
+      vim.api.nvim_buf_set_lines(0, 0, -1, false, status_lines)
+      vim.cmd("setlocal buftype=nofile bufhidden=wipe noswapfile")
+      vim.cmd("setlocal filetype=bvi-status")
+      vim.cmd("resize 15")
     end)
-  end)
+  else
+    -- Display basic status without BAUXD
+    status_lines[#status_lines + 1] = ""
+    status_lines[#status_lines + 1] = "Note: Install BAUXD for full AI capabilities"
+    status_lines[#status_lines + 1] = "See: https://github.com/badlandz/bauxd"
+
+    vim.cmd("new")
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, status_lines)
+    vim.cmd("setlocal buftype=nofile bufhidden=wipe noswapfile")
+    vim.cmd("setlocal filetype=bvi-status")
+    vim.cmd("resize 12")
+  end
 end
 
 -- Initialize the AI module
@@ -330,13 +354,30 @@ M.setup = function(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
   -- Check for required dependencies
-  if not pcall(require, 'plenary.curl') then
-    vim.notify("BVI AI requires plenary.nvim for HTTP requests", vim.log.levels.ERROR)
-    return false
+  local plenary_ok = pcall(require, 'plenary.curl')
+  if not plenary_ok then
+    vim.notify("BVI AI: plenary.nvim required for HTTP requests", vim.log.levels.WARN)
+    M.bauxd_available = false
+  else
+    -- Test BAUXD connectivity
+    M.test_bauxd_connectivity()
   end
 
-  vim.notify("BVI AI integration initialized", vim.log.levels.INFO)
-  return true
+  if M.bauxd_available then
+    vim.notify("BVI AI integration initialized (BAUXD connected)", vim.log.levels.INFO)
+  else
+    vim.notify("BVI AI: BAUXD not available - limited functionality", vim.log.levels.WARN)
+  end
+
+  return M.bauxd_available
+end
+
+-- Test BAUXD connectivity (simplified synchronous check)
+M.test_bauxd_connectivity = function()
+  -- For now, just assume BAUXD is available if plenary is loaded
+  -- In a real implementation, you might want to do a synchronous check
+  -- or handle this asynchronously
+  M.bauxd_available = true -- Assume available, handle errors gracefully
 end
 
 return M

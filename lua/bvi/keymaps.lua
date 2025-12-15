@@ -1,50 +1,63 @@
 -- lua/bvi/keymaps.lua
-local map = vim.keymap.set
-local opts = { noremap = true, silent = true }
+local M = {}
 
--- Leader is space – sacred
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+function M.setup(config)
+  local map = vim.keymap.set
+  local opts = { noremap = true, silent = true }
 
--- Better window navigation (works with vim-tmux-navigator)
-map('n', '<A-h>', '<C-w>h', opts)
-map('n', '<A-j>', '<C-w>j', opts)
-map('n', '<A-k>', '<C-w>k', opts)
-map('n', '<A-l>', '<C-w>l', opts)
+  -- Only set leader if not already set
+  if not vim.g.mapleader or vim.g.mapleader == '' then
+    vim.g.mapleader = ' '
+  end
+  if not vim.g.maplocalleader or vim.g.maplocalleader == '' then
+    vim.g.maplocalleader = ' '
+  end
 
--- Resize with arrows (because Pi Zero keyboards have arrows)
-map('n', '<C-Up>', ':resize +2<CR>', opts)
-map('n', '<C-Down>', ':resize -2<CR>', opts)
-map('n', '<C-Left>', ':vertical resize -2<CR>', opts)
-map('n', '<C-Right>', ':vertical resize +2<CR>', opts)
+  -- Better window navigation (works with vim-tmux-navigator)
+  map('n', '<A-h>', '<C-w>h', opts)
+  map('n', '<A-j>', '<C-w>j', opts)
+  map('n', '<A-k>', '<C-w>k', opts)
+  map('n', '<A-l>', '<C-w>l', opts)
 
--- Better indenting
-map('v', '<', '<gv', opts)
-map('v', '>', '>gv', opts)
+  -- Resize with arrows (because Pi Zero keyboards have arrows)
+  map('n', '<C-Up>', ':resize +2<CR>', opts)
+  map('n', '<C-Down>', ':resize -2<CR>', opts)
+  map('n', '<C-Left>', ':vertical resize -2<CR>', opts)
+  map('n', '<C-Right>', ':vertical resize +2<CR>', opts)
 
--- Escape is CapsLock already – jk is redundant but everyone loves it
-map('i', 'jk', '<ESC>', opts)
+  -- Better indenting
+  map('v', '<', '<gv', opts)
+  map('v', '>', '>gv', opts)
 
--- Leader shortcuts – Primagen / kickstart style but BAUX-aligned
-map('n', '<leader>pv', ':Ex<CR>', opts) -- netrw → we’ll replace with mini.files later
-map('n', '<leader>u', ':UndotreeToggle<CR>', opts)
-map('n', '<leader>gs', ':Gitsigns stage_hunk<CR>', opts)
-map('n', '<leader>gr', ':Gitsigns reset_hunk<CR>', opts)
+  -- Escape is CapsLock already – jk is redundant but everyone loves it
+  map('i', 'jk', '<ESC>', opts)
 
--- Telescope – the real file finder
-local builtin = require 'telescope.builtin'
-map('n', '<leader>ff', builtin.find_files, opts)
-map('n', '<leader>fg', builtin.live_grep, opts)
-map('n', '<leader>fb', builtin.buffers, opts)
-map('n', '<leader>fh', builtin.help_tags, opts)
+  -- Leader shortcuts – Primagen / kickstart style but BAUX-aligned
+  map('n', '<leader>pv', ':Ex<CR>', opts) -- netrw → we’ll replace with mini.files later
+  map('n', '<leader>u', ':UndotreeToggle<CR>', opts)
+  map('n', '<leader>gs', ':Gitsigns stage_hunk<CR>', opts)
+  map('n', '<leader>gr', ':Gitsigns reset_hunk<CR>', opts)
 
--- Persistence (immortality)
-map('n', '<leader>qs', function()
-  require('persistence').load()
-end, opts)
-map('n', '<leader>ql', function()
-  require('persistence').load { last = true }
-end, opts)
+  -- Telescope – the real file finder (only if available)
+  local telescope_ok = pcall(require, 'telescope.builtin')
+  if telescope_ok then
+    local builtin = require 'telescope.builtin'
+    map('n', '<leader>ff', builtin.find_files, opts)
+    map('n', '<leader>fg', builtin.live_grep, opts)
+    map('n', '<leader>fb', builtin.buffers, opts)
+    map('n', '<leader>fh', builtin.help_tags, opts)
+  end
+
+  -- Persistence (immortality) - only if available
+  local persistence_ok = pcall(require, 'persistence')
+  if persistence_ok then
+    map('n', '<leader>qs', function()
+      require('persistence').load()
+    end, opts)
+    map('n', '<leader>ql', function()
+      require('persistence').load { last = true }
+    end, opts)
+  end
 
   -- THE SACRED LATTICE — leader + 1–9 → jump to buffer 1–9
   -- This is the final unification of the entire OS keymap
@@ -79,69 +92,104 @@ end, opts)
   -- Bonus: leader-0 → last buffer (like tmux last-window)
   map("n", "<leader>0", "<C-^>", { desc = "Alternate/last buffer" })
 
-    -- DB: Open schema, run query
-  map("n", "<leader>db", ":DBUIToggle<CR>", { desc = "DB Browser" })
-  map("v", "<leader>cr", "<Plug>(DBUI_ExecuteQuery)", { desc = "Run SQL" })  -- Visual select → run
+  -- DB: Open schema, run query (only if available)
+  if vim.fn.exists(':DBUIToggle') == 2 then
+    map("n", "<leader>db", ":DBUIToggle<CR>", { desc = "DB Browser" })
+    map("v", "<leader>cr", "<Plug>(DBUI_ExecuteQuery)", { desc = "Run SQL" })
+  end
 
-  -- FORMAT: Manual if auto-save misses
-  map("n", "<leader>fm", function() require("conform").format({ async = true }) end, { desc = "Format" })
+  -- FORMAT: Manual if auto-save misses (only if conform available)
+  local conform_ok = pcall(require, 'conform')
+  if conform_ok then
+    map("n", "<leader>fm", function() require("conform").format({ async = true }) end, { desc = "Format" })
+  end
 
-  -- MARKDOWN: Preview, open link (old muscle memory)
-  map("n", "<leader>mp", ":MarkdownPreviewToggle<CR>", { desc = "Markdown Preview" })
-  map("n", "<CR>", "<Plug>(Markdown_Open_Link)", { desc = "Open Markdown Link" })  -- Enter on link
+  -- MARKDOWN: Preview, open link (only if available)
+  if vim.fn.exists(':MarkdownPreviewToggle') == 2 then
+    map("n", "<leader>mp", ":MarkdownPreviewToggle<CR>", { desc = "Markdown Preview" })
+    map("n", "<CR>", "<Plug>(Markdown_Open_Link)", { desc = "Open Markdown Link" })
+  end
 
-  -- TASKWARRIOR: Toggle tasks
-  map("n", "<leader>tw", ":TaskWarriorToggle<CR>", { desc = "TaskWarrior" })
+  -- TASKWARRIOR: Toggle tasks (only if available)
+  if vim.fn.exists(':TaskWarriorToggle') == 2 then
+    map("n", "<leader>tw", ":TaskWarriorToggle<CR>", { desc = "TaskWarrior" })
+  end
 
-   -- LSP: Diagnostics list
-   map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", { desc = "Diagnostics (Trouble)" })
+  -- LSP: Diagnostics list (only if trouble available)
+  if vim.fn.exists(':Trouble') == 2 then
+    map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", { desc = "Diagnostics (Trouble)" })
+  end
 
-   -- AI ASSISTANCE: Enhanced context-aware AI help with direct BAUXD integration
-   map("n", "<leader>ai", function()
-     local ai = require('bvi.ai')
-     if not ai.setup() then return end
-     ai.smart_assist()
-   end, { desc = "Smart AI Assistance" })
+  -- AI ASSISTANCE: Enhanced context-aware AI help with direct BAUXD integration
+  map("n", "<leader>ai", function()
+    local ai_ok, ai = pcall(require, 'bvi.ai')
+    if not ai_ok then
+      vim.notify("BVI AI module not available", vim.log.levels.WARN)
+      return
+    end
+    ai.smart_assist()
+  end, { desc = "Smart AI Assistance" })
 
-   map("v", "<leader>ai", function()
-     local ai = require('bvi.ai')
-     if not ai.setup() then return end
-     -- Get visual selection
-     local start_pos = vim.fn.getpos("'<")
-     local end_pos = vim.fn.getpos("'>")
-     local lines = vim.fn.getline(start_pos[2], end_pos[2])
-     local selection = table.concat(lines, "\n")
-     ai.smart_assist("Help with this code selection: " .. selection)
-   end, { desc = "AI on Selection" })
+  map("v", "<leader>ai", function()
+    local ai_ok, ai = pcall(require, 'bvi.ai')
+    if not ai_ok then
+      vim.notify("BVI AI module not available", vim.log.levels.WARN)
+      return
+    end
+    -- Get visual selection
+    local start_pos = vim.fn.getpos("'<")
+    local end_pos = vim.fn.getpos("'>")
+    local lines = vim.fn.getline(start_pos[2], end_pos[2])
+    local selection = table.concat(lines, "\n")
+    ai.smart_assist("Help with this code selection: " .. selection)
+  end, { desc = "AI on Selection" })
 
-   -- SPECIALIZED AI COMMANDS
-   map("n", "<leader>aa", function()
-     local ai = require('bvi.ai')
-     if not ai.setup() then return end
-     ai.analyze_code()
-   end, { desc = "Analyze Code" })
+  -- SPECIALIZED AI COMMANDS
+  map("n", "<leader>aa", function()
+    local ai_ok, ai = pcall(require, 'bvi.ai')
+    if not ai_ok then
+      vim.notify("BVI AI requires BAUXD. Install BAUX ecosystem for full functionality.", vim.log.levels.WARN)
+      return
+    end
+    ai.analyze_code()
+  end, { desc = "Analyze Code" })
 
-   map("n", "<leader>ar", function()
-     local ai = require('bvi.ai')
-     if not ai.setup() then return end
-     ai.smart_assist("Suggest refactoring improvements for this code")
-   end, { desc = "Refactoring Suggestions" })
+  map("n", "<leader>ar", function()
+    local ai_ok, ai = pcall(require, 'bvi.ai')
+    if not ai_ok then
+      vim.notify("BVI AI requires BAUXD. Install BAUX ecosystem for full functionality.", vim.log.levels.WARN)
+      return
+    end
+    ai.smart_assist("Suggest refactoring improvements for this code")
+  end, { desc = "Refactoring Suggestions" })
 
-   map("n", "<leader>ad", function()
-     local ai = require('bvi.ai')
-     if not ai.setup() then return end
-     ai.smart_assist("Help debug this code - identify potential issues")
-   end, { desc = "Debug Assistance" })
+  map("n", "<leader>ad", function()
+    local ai_ok, ai = pcall(require, 'bvi.ai')
+    if not ai_ok then
+      vim.notify("BVI AI requires BAUXD. Install BAUX ecosystem for full functionality.", vim.log.levels.WARN)
+      return
+    end
+    ai.smart_assist("Help debug this code - identify potential issues")
+  end, { desc = "Debug Assistance" })
 
-   -- AI CONTEXT & STATUS
-   map("n", "<leader>ac", function()
-     local ai = require('bvi.ai')
-     if not ai.setup() then return end
-     ai.show_context()
-   end, { desc = "Show AI Context" })
+  -- AI CONTEXT & STATUS
+  map("n", "<leader>ac", function()
+    local ai_ok, ai = pcall(require, 'bvi.ai')
+    if not ai_ok then
+      vim.notify("BVI AI module not available", vim.log.levels.WARN)
+      return
+    end
+    ai.show_context()
+  end, { desc = "Show AI Context" })
 
-   map("n", "<leader>as", function()
-     local ai = require('bvi.ai')
-     if not ai.setup() then return end
-     ai.show_status()
-   end, { desc = "AI System Status" })
+  map("n", "<leader>as", function()
+    local ai_ok, ai = pcall(require, 'bvi.ai')
+    if not ai_ok then
+      vim.notify("BVI AI module not available", vim.log.levels.WARN)
+      return
+    end
+    ai.show_status()
+  end, { desc = "AI System Status" })
+end
+
+return M
