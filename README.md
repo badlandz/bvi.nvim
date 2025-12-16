@@ -256,5 +256,142 @@ For maximum useage bling/bloat, I have this on my workstation to use it:
 sudo apt update
 sudo apt install -y build-essential git make gcc curl wget unzip gzip tar nodejs npm ripgrep fd-find postgresql-client texlive-full zathura taskwarrior ca-certificates```
 
-Still debugging
+## 📦 **Installation**
 
+### **For Independent Neovim Users**
+Add to your `lazy.nvim` setup:
+
+```lua
+-- ~/.config/nvim/lua/plugins/bvi.lua
+return {
+  {
+    "badlandz/bvi.nvim",
+    config = function()
+      require("bvi").setup({
+        -- Optional: customize settings
+        ai = {
+          enabled = false,  -- Set to true if you have BAUXD
+          bauxd_host = "localhost",
+          bauxd_port = 9999,
+        },
+        keymaps = {
+          enabled = true,
+          prefix = "<leader>",
+        },
+      })
+    end,
+  },
+}
+```
+
+### **For BAUX Ecosystem Users**
+BVI is automatically integrated when using the BAUX wrapper:
+
+```bash
+# Install BVI wrapper on your system
+sudo cp bvi /usr/local/bin/bvi
+sudo chmod +x /usr/local/bin/bvi
+
+# Use BVI with AI integration
+bvi yourfile.lua
+```
+
+### **Requirements**
+- **Neovim 0.8+**
+- **plenary.nvim** (for AI features)
+- **Optional**: BAUXD running on localhost:9999 (for AI integration)
+
+### **Standalone Testing**
+```bash
+# Test BVI plugin loading
+nvim --headless -c 'lua require("bvi")' -c 'q'
+
+# Test with BAUXD AI
+nvim --headless -c 'lua require("bvi").setup({ai={enabled=true}})' -c 'q'
+```
+
+---
+
+## 🎯 **Features**
+
+### **Core Enhancements** (Always Available)
+- Enhanced options for better editing experience
+- Smart autocmds for productivity
+- Advanced keymaps for navigation and editing
+- UI improvements with floating windows and spinners
+
+### **AI Integration** (Requires BAUX Ecosystem)
+- Real-time AI assistance with context awareness
+- Smart backend routing (Grok/Ollama based on complexity)
+- Code analysis and refactoring suggestions
+- Debug assistance and contextual help
+
+### **BAUX Ecosystem Integration**
+- Seamless integration with BAUXD service registry
+- Cross-node AI continuity
+- Session roaming and persistence
+- Mesh-wide AI capabilities
+
+---
+
+## 🔧 **Configuration**
+
+### **Basic Setup**
+```lua
+require("bvi").setup()
+```
+
+### **Full Configuration**
+```lua
+require("bvi").setup({
+  ai = {
+    enabled = true,        -- Enable AI features (requires BAUXD)
+    bauxd_host = "localhost",
+    bauxd_port = 9999,
+    timeout = 5000,
+    max_context_lines = 100,
+  },
+
+  ui = {
+    enable_loading_spinners = true,
+    enable_floating_windows = true,
+  },
+
+  keymaps = {
+    enabled = true,
+    prefix = "<leader>",
+  },
+})
+```
+
+### **AI Commands** (when BAUXD available)
+- `<leader>ai` - Smart AI assistance
+- `<leader>aa` - Analyze current code
+- `<leader>ar` - Refactoring suggestions
+- `<leader>ad` - Debug assistance
+- `<leader>ac` - Show AI context
+- `<leader>as` - AI system status
+
+---
+
+## 🤝 **Contributing**
+
+### **Development Setup**
+```bash
+# Clone the repository
+git clone https://github.com/badlandz/bvi.nvim.git
+cd bvi.nvim
+
+# Test the plugin
+nvim --headless -c 'lua require("bvi")' -c 'q'
+```
+
+### **BAUX Ecosystem Integration**
+For full AI features, integrate with the BAUX ecosystem:
+- Install BAUXD service registry
+- Set up BAUX-BOT AI assistant
+- Configure TMUX integration
+
+---
+
+**BVI: Enhanced editing experience with optional AI superpowers!** 🚀🤖✨
